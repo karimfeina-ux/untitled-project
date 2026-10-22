@@ -1,3 +1,5 @@
+import type { Schedule } from "./hours";
+
 // Real Barcelona businesses with no website listed on Google Maps.
 // Phone, address, hours, rating, reviews and photos come from their Google Maps listing (Oct 2026).
 import forn from "@/assets/real-forn.jpg.asset.json";
@@ -24,6 +26,8 @@ export type Site = {
   phone: string;
   mapsUrl: string;
   hours: string[];
+  schedule: Schedule;
+  whatsapp: boolean;
 };
 
 export const sites: Site[] = [
@@ -53,6 +57,8 @@ export const sites: Site[] = [
     phone: "+34 932 18 05 46",
     mapsUrl: "https://maps.google.com/?cid=4712620581805170093",
     hours: ["Mon–Sat 7:15–21:00", "Sunday closed"],
+    schedule: {1:[[435,1260]],2:[[435,1260]],3:[[435,1260]],4:[[435,1260]],5:[[435,1260]],6:[[435,1260]]},
+    whatsapp: false,
   },
   {
     slug: "the-barber-club",
@@ -63,7 +69,7 @@ export const sites: Site[] = [
     tagline: "Sharp fades. Clean beards. Open 7 days.",
     intro: "Skin fades, beard trims and classic cuts on Carrer de Sant Pau — with a head massage to finish. Walk in any day of the week.",
     image: barber.url,
-    cta: "Book on WhatsApp",
+    cta: "Book a cut",
     services: [
       { name: "Haircut", desc: "Classic or modern, styled to your photo" },
       { name: "Skin fade", desc: "Low, mid or high — precision work" },
@@ -80,6 +86,8 @@ export const sites: Site[] = [
     phone: "+34 695 79 33 37",
     mapsUrl: "https://maps.google.com/?cid=6321368303583567909",
     hours: ["Mon, Thu–Sun 9:00–21:30", "Tue 9:30–21:30", "Wed 9:00–21:00"],
+    schedule: {0:[[540,1290]],1:[[540,1290]],2:[[570,1290]],3:[[540,1260]],4:[[540,1290]],5:[[540,1290]],6:[[540,1290]]},
+    whatsapp: true,
   },
   {
     slug: "petit-bar",
@@ -107,6 +115,8 @@ export const sites: Site[] = [
     phone: "+34 653 97 81 87",
     mapsUrl: "https://maps.google.com/?cid=13173663408151711190",
     hours: ["Tue–Fri 8:00–16:00, 19:00–22:00", "Sat 10:00–22:00", "Sun 10:00–16:00", "Monday closed"],
+    schedule: {0:[[600,960]],2:[[480,960],[1140,1320]],3:[[480,960],[1140,1320]],4:[[480,960],[1140,1320]],5:[[480,960],[1140,1320]],6:[[600,1320]]},
+    whatsapp: true,
   },
   {
     slug: "floristeria-raco-verd",
@@ -134,6 +144,8 @@ export const sites: Site[] = [
     phone: "+34 652 84 36 17",
     mapsUrl: "https://maps.google.com/?cid=14581174614078858846",
     hours: ["Mon–Thu 11:30–21:30", "Fri–Sat 11:30–22:00", "Sun 11:30–15:00"],
+    schedule: {0:[[690,900]],1:[[690,1290]],2:[[690,1290]],3:[[690,1290]],4:[[690,1290]],5:[[690,1320]],6:[[690,1320]]},
+    whatsapp: true,
   },
   {
     slug: "taller-bikes",
@@ -161,6 +173,8 @@ export const sites: Site[] = [
     phone: "+34 632 18 57 92",
     mapsUrl: "https://maps.google.com/?cid=17211258607476200255",
     hours: ["Mon–Sat 10:00–14:00, 16:00–20:00", "Sunday closed"],
+    schedule: {1:[[600,840],[960,1200]],2:[[600,840],[960,1200]],3:[[600,840],[960,1200]],4:[[600,840],[960,1200]],5:[[600,840],[960,1200]],6:[[600,840],[960,1200]]},
+    whatsapp: true,
   },
 ];
 
