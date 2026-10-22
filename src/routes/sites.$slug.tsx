@@ -1,5 +1,7 @@
 import { createFileRoute, notFound, Link } from "@tanstack/react-router";
+import { useEffect, useRef, useState, type ReactNode, type MouseEvent } from "react";
 import { getSite, type Site } from "@/lib/sites";
+import { isOpenAt } from "@/lib/hours";
 
 export const Route = createFileRoute("/sites/$slug")({
   loader: ({ params }) => {
@@ -26,167 +28,248 @@ export const Route = createFileRoute("/sites/$slug")({
 
 const tel = (p: string) => `tel:${p.replace(/\s/g, "")}`;
 const wa = (s: Site) =>
-  `https://wa.me/${s.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola ${s.name}! I'd like to ${s.cta.toLowerCase()}.`)}`;
+  `https://wa.me/${s.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola ${s.name}! 👋`)}`;
 
-function Hero({ s }: { s: Site }) {
-  const ctas = (
-    <div className="mt-8 flex flex-wrap gap-3">
-      <a href={wa(s)} target="_blank" rel="noreferrer" className="btn-site">{s.cta}</a>
-      <a href="#menu" className="btn-site-ghost">What we do</a>
+function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setIn] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const io = new IntersectionObserver(([e]) => e.isIntersecting && (setIn(true), io.disconnect()), { threshold: 0.15 });
+    io.observe(el);
+    return () => io.disconnect();
+  }, []);
+  return (
+    <div ref={ref} style={{ transitionDelay: `${delay}ms` }} className={`reveal ${inView ? "is-in" : ""} ${className}`}>
+      {children}
     </div>
   );
-  switch (s.slug) {
-    case "barberia-raval":
-      return (
-        <section className="relative flex min-h-[88vh] items-end overflow-hidden">
-          <img src={s.image} alt={s.name} width={1600} height={1008} className="absolute inset-0 h-full w-full object-cover opacity-50" />
-          <div className="hero-fade absolute inset-0" />
-          <div className="relative mx-auto w-full max-w-6xl px-6 pb-16">
-            <p className="mb-2 tracking-[0.4em] text-primary">★ {s.rating} · {s.reviewCount} GOOGLE REVIEWS · {s.barrio.toUpperCase()}</p>
-            <h1 className="font-display text-[clamp(4rem,14vw,11rem)] leading-[0.85]">{s.tagline}</h1>
-            <p className="mt-6 max-w-md text-muted-foreground">{s.intro}</p>
-            {ctas}
-          </div>
-        </section>
-      );
-    case "bar-la-cova":
-      return (
-        <section className="mx-auto max-w-6xl px-6 pb-16 pt-6 text-center">
-          <h1 className="font-display text-[clamp(3rem,10vw,8rem)] leading-none text-primary">{s.tagline}</h1>
-          <p className="mx-auto mt-6 max-w-xl text-lg">{s.intro}</p>
-          <div className="flex justify-center">{ctas}</div>
-          <div className="relative mt-14">
-            <img src={s.image} alt={s.name} width={1600} height={1008} className="w-full -rotate-1 rounded-[var(--radius)] border-8 border-card shadow-2xl" />
-            <span className="sticker absolute -right-2 -top-6 md:right-10">★ {s.rating}<br />Google</span>
-          </div>
-        </section>
-      );
-    case "flors-eixample":
-      return (
-        <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-8 md:grid-cols-[1fr_1.1fr]">
-          <img src={s.image} alt={s.name} width={1600} height={1008} className="arch aspect-[3/4] w-full object-cover" />
-          <div>
-            <p className="mb-4 italic text-muted-foreground">— {s.barrio}, Barcelona</p>
-            <h1 className="font-display text-6xl italic leading-[1] md:text-8xl">{s.tagline}</h1>
-            <p className="mt-6 max-w-md text-lg text-muted-foreground">{s.intro}</p>
-            {ctas}
-          </div>
-        </section>
-      );
-    case "bicis-poblenou":
-      return (
-        <section className="mx-auto max-w-6xl px-6 pb-16 pt-4">
-          <div className="grid gap-4 md:grid-cols-3">
-            <div className="brut col-span-2 bg-primary p-8 text-primary-foreground">
-              <h1 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-bold uppercase leading-[0.9]">{s.tagline}</h1>
-            </div>
-            <div className="brut flex flex-col justify-between bg-card p-6">
-              <p className="font-display text-6xl font-bold">★ {s.rating}</p>
-              <p className="text-sm">from {s.reviewCount} Google reviews.</p>
-            </div>
-            <img src={s.image} alt={s.name} width={1600} height={1008} className="brut col-span-2 h-80 w-full object-cover md:h-[26rem]" />
-            <div className="brut bg-card p-6">
-              <p>{s.intro}</p>
-              {ctas}
-            </div>
-          </div>
-        </section>
-      );
-    default:
-      return (
-        <section className="mx-auto max-w-6xl px-6 pb-16 pt-6">
-          <p className="mb-4 text-sm uppercase tracking-[0.3em] text-muted-foreground">Fleca artesana · {s.barrio}</p>
-          <h1 className="font-display max-w-4xl text-6xl leading-[1] md:text-8xl">{s.tagline}</h1>
-          <div className="mt-8 grid items-end gap-8 md:grid-cols-[1fr_2fr]">
-            <div>
-              <p className="text-lg text-muted-foreground">{s.intro}</p>
-              {ctas}
-            </div>
-            <img src={s.image} alt={s.name} width={1600} height={1008} className="aspect-[16/10] w-full rounded-[var(--radius)] object-cover shadow-2xl" />
-          </div>
-        </section>
-      );
+}
+
+function OpenBadge({ s }: { s: Site }) {
+  const [open, setOpen] = useState<boolean | null>(null);
+  useEffect(() => {
+    const tick = () => setOpen(isOpenAt(s.schedule, new Date()));
+    tick();
+    const id = setInterval(tick, 60_000);
+    return () => clearInterval(id);
+  }, [s.schedule]);
+  if (open === null) return <span className="badge">Barcelona</span>;
+  return (
+    <span className="badge">
+      <span className={`dot ${open ? "dot-open" : "dot-closed"}`} />
+      {open ? "Open now" : "Closed now"}
+    </span>
+  );
+}
+
+function Magnetic({ href, children, ghost, external }: { href: string; children: ReactNode; ghost?: boolean; external?: boolean }) {
+  const onMove = (e: MouseEvent<HTMLAnchorElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    e.currentTarget.style.transform = `translate(${(e.clientX - r.left - r.width / 2) * 0.2}px, ${(e.clientY - r.top - r.height / 2) * 0.3}px)`;
+  };
+  return (
+    <a
+      href={href}
+      {...(external ? { target: "_blank", rel: "noreferrer" } : {})}
+      onMouseMove={onMove}
+      onMouseLeave={(e) => (e.currentTarget.style.transform = "")}
+      className={ghost ? "btn-site-ghost" : "btn-site"}
+    >
+      {children}
+    </a>
+  );
+}
+
+function Ctas({ s }: { s: Site }) {
+  return (
+    <div className="mt-10 flex flex-wrap gap-3">
+      {s.whatsapp ? (
+        <Magnetic href={wa(s)} external>{s.cta} · WhatsApp</Magnetic>
+      ) : (
+        <Magnetic href={tel(s.phone)}>{s.cta}</Magnetic>
+      )}
+      <Magnetic href={tel(s.phone)} ghost>☎ {s.phone}</Magnetic>
+    </div>
+  );
+}
+
+function Hero({ s }: { s: Site }) {
+  const meta = (
+    <div className="mb-6 flex flex-wrap items-center gap-3">
+      <OpenBadge s={s} />
+      <span className="badge">★ {s.rating.toFixed(1)} · {s.reviewCount} Google reviews</span>
+    </div>
+  );
+  const img = (cls: string) => <img src={s.image} alt={`${s.name}, ${s.barrio}`} width={1600} height={1200} className={cls} />;
+
+  if (s.theme === "theme-barber" || s.theme === "theme-tapas") {
+    return (
+      <section className="relative flex min-h-[92vh] items-end overflow-hidden">
+        {img("absolute inset-0 h-full w-full object-cover opacity-45 hero-zoom")}
+        <div className="hero-fade absolute inset-0" />
+        <div className="relative mx-auto w-full max-w-6xl px-6 pb-20">
+          <Reveal>{meta}</Reveal>
+          <Reveal delay={100}>
+            <h1 className="font-display text-[clamp(3.2rem,10vw,9rem)] leading-[0.9]">{s.tagline}</h1>
+          </Reveal>
+          <Reveal delay={200}>
+            <p className="mt-6 max-w-lg text-lg text-muted-foreground">{s.intro}</p>
+            <Ctas s={s} />
+          </Reveal>
+        </div>
+      </section>
+    );
   }
+  return (
+    <section className="mx-auto grid max-w-6xl items-center gap-12 px-6 pb-20 pt-10 md:grid-cols-[1.1fr_1fr]">
+      <div>
+        <Reveal>{meta}</Reveal>
+        <Reveal delay={100}>
+          <h1 className="font-display text-[clamp(3rem,7vw,6.5rem)] leading-[0.95]">{s.tagline}</h1>
+        </Reveal>
+        <Reveal delay={200}>
+          <p className="mt-6 max-w-md text-lg text-muted-foreground">{s.intro}</p>
+          <Ctas s={s} />
+        </Reveal>
+      </div>
+      <Reveal delay={150}>
+        <div className="frame">{img(`aspect-[4/5] w-full object-cover ${s.theme === "theme-flors" ? "arch" : ""}`)}</div>
+      </Reveal>
+    </section>
+  );
+}
+
+function TiltCard({ children }: { children: ReactNode }) {
+  const onMove = (e: MouseEvent<HTMLDivElement>) => {
+    const r = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width - 0.5;
+    const y = (e.clientY - r.top) / r.height - 0.5;
+    e.currentTarget.style.transform = `perspective(800px) rotateX(${-y * 6}deg) rotateY(${x * 6}deg)`;
+    e.currentTarget.style.setProperty("--mx", `${(x + 0.5) * 100}%`);
+    e.currentTarget.style.setProperty("--my", `${(y + 0.5) * 100}%`);
+  };
+  return (
+    <div onMouseMove={onMove} onMouseLeave={(e) => (e.currentTarget.style.transform = "")} className="tilt glass h-full p-7">
+      {children}
+    </div>
+  );
 }
 
 function SitePage() {
   const s = Route.useLoaderData();
+  const [menu, setMenu] = useState(false);
+  const links = [
+    ["#services", "Services"],
+    ["#reviews", "Reviews"],
+    ["#visit", "Visit"],
+  ];
   return (
-    <div className={`${s.theme} site min-h-screen bg-background text-foreground`}>
-      <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
+    <div className={`${s.theme} site grain relative min-h-screen overflow-x-hidden bg-background text-foreground`}>
+      <div className="ambient" aria-hidden />
+      <header className="sticky top-0 z-30 border-b border-border bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
-          <a href="#top" className="font-display text-2xl">{s.name}</a>
-          <nav className="flex items-center gap-5 text-sm">
-            <a href="#menu" className="hidden sm:inline">Services</a>
-            <a href="#visit" className="hidden sm:inline">Visit</a>
-            <a href={tel(s.phone)} className="btn-site !py-2">Call</a>
+          <a href="#top" className="font-display text-xl md:text-2xl">{s.name}</a>
+          <nav className="hidden items-center gap-7 text-sm md:flex">
+            {links.map(([h, l]) => <a key={h} href={h} className="navlink">{l}</a>)}
+            <a href={tel(s.phone)} className="btn-site !px-4 !py-2">Call</a>
           </nav>
+          <button aria-label={menu ? "Close menu" : "Open menu"} aria-expanded={menu} onClick={() => setMenu(!menu)} className="burger md:hidden">
+            <span className={menu ? "rotate-45 translate-y-[5px]" : ""} />
+            <span className={menu ? "-rotate-45 -translate-y-[5px]" : ""} />
+          </button>
+        </div>
+        <div className={`mobile-menu md:hidden ${menu ? "is-open" : ""}`}>
+          {links.map(([h, l]) => <a key={h} href={h} onClick={() => setMenu(false)} className="font-display text-3xl">{l}</a>)}
+          <a href={tel(s.phone)} onClick={() => setMenu(false)} className="btn-site mt-2 justify-center">Call {s.phone}</a>
         </div>
       </header>
       <div id="top" />
       <Hero s={s} />
 
-      <div className="marquee border-y border-border py-4">
-        <div className="marquee-track font-display text-2xl">
+      <div className="marquee border-y border-border py-5">
+        <div className="marquee-track font-display text-2xl text-muted-foreground">
           {[0, 1].map((k) => (
-            <span key={k} className="flex shrink-0 gap-12 pr-12">
-              {s.services.map((x) => <span key={x.name}>{x.name} ✦</span>)}
-              <span>{s.barrio} ✦</span>
+            <span key={k} className="flex shrink-0 gap-12 pr-12" aria-hidden={k === 1}>
+              {s.services.map((x) => <span key={x.name}>{x.name} <span className="text-primary">✦</span></span>)}
+              <span>{s.barrio} <span className="text-primary">✦</span></span>
             </span>
           ))}
         </div>
       </div>
 
-      <section id="menu" className="scroll-mt-20 py-20">
-        <div className="mx-auto max-w-4xl px-6">
-          <h2 className="font-display mb-10 text-5xl">What we do</h2>
-          <ul className="divide-y divide-border">
+      <section id="services" className="scroll-mt-24 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
+            <p className="eyebrow">What we do</p>
+            <h2 className="font-display mb-12 mt-3 text-5xl md:text-6xl">Made for the neighbourhood.</h2>
+          </Reveal>
+          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
             {s.services.map((x, i) => (
-              <li key={x.name} className="flex items-baseline justify-between gap-6 py-5">
-                <div className="flex gap-5">
-                  <span className="font-display text-muted-foreground">0{i + 1}</span>
-                  <div>
-                    <p className="text-xl font-medium">{x.name}</p>
-                    <p className="text-sm text-muted-foreground">{x.desc}</p>
-                  </div>
-                </div>
-              </li>
+              <Reveal key={x.name} delay={i * 90}>
+                <TiltCard>
+                  <span className="font-display text-sm text-primary">0{i + 1}</span>
+                  <p className="mt-8 text-xl font-medium">{x.name}</p>
+                  <p className="mt-2 text-sm text-muted-foreground">{x.desc}</p>
+                </TiltCard>
+              </Reveal>
             ))}
-          </ul>
-          <a href={wa(s)} target="_blank" rel="noreferrer" className="btn-site mt-10">{s.cta} on WhatsApp</a>
-        </div>
-      </section>
-
-      <section className="bg-card py-20">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-2">
-          {s.quotes.map((q) => (
-            <blockquote key={q.who} className="border-l-4 border-primary pl-6">
-              <p className="text-primary">★★★★★</p>
-              <p className="font-display mt-2 text-3xl">“{q.text}”</p>
-              <footer className="mt-3 text-sm text-muted-foreground">— {q.who}</footer>
-            </blockquote>
-          ))}
-        </div>
-      </section>
-
-      <section id="visit" className="scroll-mt-20 bg-primary py-20 text-primary-foreground">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 md:grid-cols-3">
-          <h2 className="font-display text-5xl">Come say hola</h2>
-          <div>
-            <p className="mb-2 text-xs uppercase tracking-widest opacity-70">Address</p>
-            <a href={s.mapsUrl} target="_blank" rel="noreferrer" className="underline underline-offset-4">{s.address}</a>
-            <p className="mb-2 mt-5 text-xs uppercase tracking-widest opacity-70">Phone</p>
-            <a href={tel(s.phone)} className="underline underline-offset-4">{s.phone}</a>
-          </div>
-          <div>
-            <p className="mb-2 text-xs uppercase tracking-widest opacity-70">Hours</p>
-            {s.hours.map((h) => <p key={h}>{h}</p>)}
           </div>
         </div>
       </section>
 
-      <footer className="py-8 text-center text-xs text-muted-foreground">
-        © 2026 {s.name} · <Link to="/" className="underline">All demos</Link>
+      <section id="reviews" className="scroll-mt-24 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
+            <p className="eyebrow">★ {s.rating.toFixed(1)} on Google · {s.reviewCount} reviews</p>
+          </Reveal>
+          <div className="mt-10 grid gap-10 md:grid-cols-2">
+            {s.quotes.map((q, i) => (
+              <Reveal key={q.who} delay={i * 120}>
+                <blockquote className="glass h-full p-8">
+                  <p className="text-primary">★★★★★</p>
+                  <p className="font-display mt-4 text-3xl leading-tight">“{q.text}”</p>
+                  <footer className="mt-5 text-sm text-muted-foreground">— {q.who}, Google review</footer>
+                </blockquote>
+              </Reveal>
+            ))}
+          </div>
+          <Reveal>
+            <a href={s.mapsUrl} target="_blank" rel="noreferrer" className="navlink mt-8 inline-block text-sm">Read all reviews on Google Maps →</a>
+          </Reveal>
+        </div>
+      </section>
+
+      <section id="visit" className="scroll-mt-24 py-24">
+        <div className="mx-auto max-w-6xl px-6">
+          <Reveal>
+            <div className="visit-card grid gap-10 p-10 md:grid-cols-3 md:p-14">
+              <div>
+                <h2 className="font-display text-5xl">Come say hola.</h2>
+                <div className="mt-6"><OpenBadge s={s} /></div>
+              </div>
+              <div>
+                <p className="eyebrow">Address</p>
+                <a href={s.mapsUrl} target="_blank" rel="noreferrer" className="navlink mt-2 block">{s.address}</a>
+                <p className="eyebrow mt-6">Phone</p>
+                <a href={tel(s.phone)} className="navlink mt-2 block">{s.phone}</a>
+                {s.whatsapp && (
+                  <a href={wa(s)} target="_blank" rel="noreferrer" className="navlink mt-1 block text-sm text-muted-foreground">Message on WhatsApp →</a>
+                )}
+              </div>
+              <div>
+                <p className="eyebrow">Hours</p>
+                <div className="mt-2 space-y-1">{s.hours.map((h) => <p key={h}>{h}</p>)}</div>
+                <a href={s.mapsUrl} target="_blank" rel="noreferrer" className="btn-site mt-6">Get directions</a>
+              </div>
+            </div>
+          </Reveal>
+        </div>
+      </section>
+
+      <footer className="border-t border-border py-8 text-center text-xs text-muted-foreground">
+        © 2026 {s.name} · {s.barrio}, Barcelona · <Link to="/" className="underline">All demos</Link>
       </footer>
     </div>
   );
