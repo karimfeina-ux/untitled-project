@@ -27,13 +27,12 @@ export const Route = createFileRoute("/sites/$slug")({
 const tel = (p: string) => `tel:${p.replace(/\s/g, "")}`;
 const wa = (s: Site) =>
   `https://wa.me/${s.phone.replace(/\D/g, "")}?text=${encodeURIComponent(`Hola ${s.name}! I'd like to ${s.cta.toLowerCase()}.`)}`;
-const maps = (a: string) => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(a)}`;
 
 function Hero({ s }: { s: Site }) {
   const ctas = (
     <div className="mt-8 flex flex-wrap gap-3">
       <a href={wa(s)} target="_blank" rel="noreferrer" className="btn-site">{s.cta}</a>
-      <a href="#menu" className="btn-site-ghost">See prices</a>
+      <a href="#menu" className="btn-site-ghost">What we do</a>
     </div>
   );
   switch (s.slug) {
@@ -43,7 +42,7 @@ function Hero({ s }: { s: Site }) {
           <img src={s.image} alt={s.name} width={1600} height={1008} className="absolute inset-0 h-full w-full object-cover opacity-50" />
           <div className="hero-fade absolute inset-0" />
           <div className="relative mx-auto w-full max-w-6xl px-6 pb-16">
-            <p className="mb-2 tracking-[0.4em] text-primary">EST. 1958 · {s.barrio.toUpperCase()}</p>
+            <p className="mb-2 tracking-[0.4em] text-primary">★ {s.rating} · {s.reviewCount} GOOGLE REVIEWS · {s.barrio.toUpperCase()}</p>
             <h1 className="font-display text-[clamp(4rem,14vw,11rem)] leading-[0.85]">{s.tagline}</h1>
             <p className="mt-6 max-w-md text-muted-foreground">{s.intro}</p>
             {ctas}
@@ -58,7 +57,7 @@ function Hero({ s }: { s: Site }) {
           <div className="flex justify-center">{ctas}</div>
           <div className="relative mt-14">
             <img src={s.image} alt={s.name} width={1600} height={1008} className="w-full -rotate-1 rounded-[var(--radius)] border-8 border-card shadow-2xl" />
-            <span className="sticker absolute -right-2 -top-6 md:right-10">Vermut<br />3 €</span>
+            <span className="sticker absolute -right-2 -top-6 md:right-10">★ {s.rating}<br />Google</span>
           </div>
         </section>
       );
@@ -82,8 +81,8 @@ function Hero({ s }: { s: Site }) {
               <h1 className="font-display text-[clamp(3rem,8vw,6.5rem)] font-bold uppercase leading-[0.9]">{s.tagline}</h1>
             </div>
             <div className="brut flex flex-col justify-between bg-card p-6">
-              <p className="font-display text-6xl font-bold">20'</p>
-              <p className="text-sm">average flat-tyre fix, while you wait.</p>
+              <p className="font-display text-6xl font-bold">★ {s.rating}</p>
+              <p className="text-sm">from {s.reviewCount} Google reviews.</p>
             </div>
             <img src={s.image} alt={s.name} width={1600} height={1008} className="brut col-span-2 h-80 w-full object-cover md:h-[26rem]" />
             <div className="brut bg-card p-6">
@@ -118,7 +117,7 @@ function SitePage() {
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-6 py-4">
           <a href="#top" className="font-display text-2xl">{s.name}</a>
           <nav className="flex items-center gap-5 text-sm">
-            <a href="#menu" className="hidden sm:inline">Prices</a>
+            <a href="#menu" className="hidden sm:inline">Services</a>
             <a href="#visit" className="hidden sm:inline">Visit</a>
             <a href={tel(s.phone)} className="btn-site !py-2">Call</a>
           </nav>
@@ -140,7 +139,7 @@ function SitePage() {
 
       <section id="menu" className="scroll-mt-20 py-20">
         <div className="mx-auto max-w-4xl px-6">
-          <h2 className="font-display mb-10 text-5xl">Prices</h2>
+          <h2 className="font-display mb-10 text-5xl">What we do</h2>
           <ul className="divide-y divide-border">
             {s.services.map((x, i) => (
               <li key={x.name} className="flex items-baseline justify-between gap-6 py-5">
@@ -151,7 +150,6 @@ function SitePage() {
                     <p className="text-sm text-muted-foreground">{x.desc}</p>
                   </div>
                 </div>
-                <span className="font-display whitespace-nowrap text-2xl text-primary">{x.price}</span>
               </li>
             ))}
           </ul>
@@ -176,7 +174,7 @@ function SitePage() {
           <h2 className="font-display text-5xl">Come say hola</h2>
           <div>
             <p className="mb-2 text-xs uppercase tracking-widest opacity-70">Address</p>
-            <a href={maps(s.address)} target="_blank" rel="noreferrer" className="underline underline-offset-4">{s.address}</a>
+            <a href={s.mapsUrl} target="_blank" rel="noreferrer" className="underline underline-offset-4">{s.address}</a>
             <p className="mb-2 mt-5 text-xs uppercase tracking-widest opacity-70">Phone</p>
             <a href={tel(s.phone)} className="underline underline-offset-4">{s.phone}</a>
           </div>
