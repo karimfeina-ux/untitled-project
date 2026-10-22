@@ -17,7 +17,7 @@ export const Route = createFileRoute("/")({
 
 function Index() {
   return (
-    <main className="theme-hub min-h-screen bg-background px-6 py-16 text-foreground">
+    <main className="theme-hub grain min-h-screen bg-background px-6 py-16 text-foreground">
       <div className="mx-auto max-w-6xl">
         <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">Barcelona · Demo portfolio</p>
         <h1 className="font-display mt-4 max-w-3xl text-5xl leading-tight md:text-7xl">Your business, online by Friday.</h1>
